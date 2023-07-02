@@ -46,3 +46,20 @@ You can see the file name and critical information by selecting `File|Info`
 ![Image info](./images/img5.png)
 
 Once an image is loaded, the other menu options are enabled, including `File|Save As` which will save the loaded image to a new file.
+
+## Transform ##
+
+### Edge Detection ###
+
+The `Transform | Edge Detection` dialog allows you to experiment with various settings to control the result of a Gaussian 3x3 convolution edge detection process.
+
+Controls:
+
+* F & S: Control a sigmoid to expand the differences between strong and weak edges.
+* Luminance Threshold: Suppress / despeckle weaker edges from results.
+* Test: Apply new settings against original image, preview results.
+* Cancel: Exit without changing original image.
+* Submit: Apply configured changes to original image.
+
+![Edge Detetection Dialog](./images/img6.png)
+

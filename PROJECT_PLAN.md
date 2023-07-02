@@ -1,11 +1,12 @@
 # Lilly Project Plan #
 
 1. Add pkg/transform/edge_detect.go
-   1. Display Edge Detection Dialog
-      1. I would like a down-sampled display of edge detection with current values in the dialog.
-         1. Selector for number of parallel channels
-         2. Any other tuneable parameters?
-      2. Apply edge detection convolution to loaded image, load resulting image.
+   1. Display Edge Detection Dialog (initial done)
+      1. I would like a down-sampled display of edge detection with current values in the dialog. (initial done - not scaled)
+         1. Selector for number of parallel channels (NA)
+         2. Any other tuneable parameters? (F, S, Threshold - done)
+      2. Apply edge detection convolution to loaded image, load resulting image. (initial done)
+      3. Phase 2: add histogram of luminance to aid in threshold setting.
 2. Add pkg/transform/scale.go
    1. Display Scale Dialog
    2. Scale loaded image, load resulting scaled image.
