@@ -4,8 +4,8 @@ import (
 	"context"
 
 	"fyne.io/fyne/v2"
-	"github.com/matthewapeters/fyne_stuff/internal/globals"
-	"github.com/matthewapeters/fyne_stuff/internal/lillyfile"
+	"github.com/matthewapeters/lilly/internal/globals"
+	"github.com/matthewapeters/lilly/internal/lillyfile"
 )
 
 func InitialMenuLoad(ctxChan chan context.Context) {

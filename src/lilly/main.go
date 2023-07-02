@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/matthewapeters/fyne_stuff/internal/globals"
-	"github.com/matthewapeters/fyne_stuff/internal/menu"
+	"github.com/matthewapeters/lilly/internal/globals"
+	"github.com/matthewapeters/lilly/internal/menu"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"

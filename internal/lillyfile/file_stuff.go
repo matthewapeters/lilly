@@ -7,7 +7,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/matthewapeters/fyne_stuff/internal/globals"
+	"github.com/matthewapeters/lilly/internal/globals"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"

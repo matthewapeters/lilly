@@ -34,8 +34,7 @@ require (
 	honnef.co/go/js/dom v0.0.0-20210725211120-f030747120f2 // indirect
 )
 
-replace (
-	github.com/matthewapeters/fyne_stuff/internal/globals v0.0.0 => ./internal/globals
-	github.com/matthewapeters/fyne_stuff/internal/lillyfile v0.0.0 => ./internal/lillyfile
-
-)
+//# replace (
+//#	github.com/matthewapeters/lilly/internal/globals v0.0.0 => ./internal/globals
+//#	github.com/matthewapeters/lilly/internal/lillyfile v0.0.0 => ./internal/lillyfile
+//#)
