@@ -13,3 +13,34 @@ After you have cloned the project, change to the project directory and run `make
 To build and run lilly in one command, use `make run`
 
 The build directory is created and cleaned by the Makefile.
+
+## Screenshots ##
+
+### Initial Window ###
+
+![initial application window](./images/img1.png)
+
+Upon starting, Lilly shows a default menu with the following options:
+
+* File
+* Transform
+
+Only `File|Open` and `File|Quit` are enabled until a file is opened.
+
+![Only Open and Quit are enabled until a file is opened](./images/img2.png)
+
+### File Selection ###
+
+Select an image file and chose `Open` to load the image.
+
+![Image File Selector Dialog](./images/img3.png)
+
+ The image will load and will by dynamically scaled to fit within the application window.  The underlying image is not reduced in scale.
+
+![An image is loaded](./images/img4.png)
+
+### Image Information ###
+
+You can see the file name and critical information by selecting `File|Info`
+
+![Image info](./images/img5.png)
