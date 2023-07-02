@@ -1,4 +1,4 @@
-module github.com/matthewapeters/fyne_stuff
+module github.com/matthewapeters/lilly
 
 go 1.20
 
