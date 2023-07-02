@@ -44,17 +44,21 @@ type EdgeDetectConfig struct {
 	BlueFactor  float64
 
 	//
-	F float64
-	S float64
+	F                  float64
+	S                  float64
+	ShowAngle          bool
+	LuminanceThreshold uint8
 }
 
 func DefaultEdgeDetectConfig() *EdgeDetectConfig {
 	return &EdgeDetectConfig{
-		RedFactor:   0.299,
-		GreenFactor: 0.587,
-		BlueFactor:  0.114,
-		F:           1.0,
-		S:           200.0,
+		RedFactor:          0.299,
+		GreenFactor:        0.587,
+		BlueFactor:         0.114,
+		F:                  25,
+		S:                  2500.0,
+		ShowAngle:          false,
+		LuminanceThreshold: 200,
 	}
 }
 
@@ -97,7 +101,7 @@ func doARow(y int, x1, x2 int, img *image.Gray, newimg *image.RGBA, cfg *EdgeDet
 		r = o
 		g = r
 		b = r
-		if o > 200 {
+		if o > 200 && cfg.ShowAngle {
 			//a2 is the angle in radians scaled to -255 to 255
 			a2 := int((angle * 255.00 / math.Pi) * 100.00)
 
@@ -127,7 +131,9 @@ func doARow(y int, x1, x2 int, img *image.Gray, newimg *image.RGBA, cfg *EdgeDet
 			}
 			newimg.Set(x, y, color.RGBA{r, g, b, o})
 		} else {
-			newimg.Set(x, y, color.Gray{o})
+			if o > cfg.LuminanceThreshold {
+				newimg.Set(x, y, color.Gray{o})
+			}
 		}
 	}
 }
