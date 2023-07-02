@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/matthewapeters/lilly/internal/globals"
+	"github.com/matthewapeters/lilly/internal/transform"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
@@ -50,6 +51,7 @@ func OpenFile() {
 		globals.InfoMenu.Disabled = false
 		globals.InfoMenu.Action = FileInfo
 		globals.TransfomEdgeDetect.Disabled = false
+		globals.TransfomEdgeDetect.Action = transform.EdgeDetect
 		globals.TransformScale.Disabled = false
 		globals.FileSaveAs.Disabled = false
 		globals.FileSaveAs.Action = SaveFileAs
