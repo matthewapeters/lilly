@@ -44,3 +44,5 @@ Select an image file and chose `Open` to load the image.
 You can see the file name and critical information by selecting `File|Info`
 
 ![Image info](./images/img5.png)
+
+Once an image is loaded, the other menu options are enabled, including `File|Save As` which will save the loaded image to a new file.
