@@ -44,21 +44,21 @@ type EdgeDetectConfig struct {
 	BlueFactor  float64
 
 	//
-	F                  float64
-	S                  float64
-	ShowAngle          bool
-	LuminanceThreshold uint8
+	F         float64
+	S         float64
+	ShowAngle bool
+	//LuminanceThreshold uint8
 }
 
 func DefaultEdgeDetectConfig() *EdgeDetectConfig {
 	return &EdgeDetectConfig{
-		RedFactor:          0.299,
-		GreenFactor:        0.587,
-		BlueFactor:         0.114,
-		F:                  25,
-		S:                  2500.0,
-		ShowAngle:          false,
-		LuminanceThreshold: 200,
+		RedFactor:   0.299,
+		GreenFactor: 0.587,
+		BlueFactor:  0.114,
+		F:           127,
+		S:           5.0,
+		ShowAngle:   false,
+		//LuminanceThreshold: 127,
 	}
 }
 
@@ -75,7 +75,8 @@ func computePixelGray(img *image.Gray, x, y int, cfg *EdgeDetectConfig) (float64
 	gradientY = 0
 
 	for _, ij := range ThreeByThree {
-		window[ij.i][ij.j] = float64(cfg.Luminance(img.At(x-1+ij.i, y-1+ij.j)))
+		r := img.GrayAt(x-1+ij.i, y-1+ij.j).Y
+		window[ij.i][ij.j] = float64(r)
 		gradientX += (window[ij.i][ij.j] * Gx[ij.i][ij.j])
 		gradientY += (window[ij.i][ij.j] * Gy[ij.i][ij.j])
 	}
@@ -88,16 +89,16 @@ func computePixelGray(img *image.Gray, x, y int, cfg *EdgeDetectConfig) (float64
 func doARow(y int, x1, x2 int, img *image.Gray, newimg *image.RGBA, cfg *EdgeDetectConfig, wg *sync.WaitGroup) {
 	defer wg.Done()
 	var o, r, g, b uint8
-	//var  a uint8
-	//a = 255
+	// The convolved value of a single point
 	var gradient float64
 	var angle float64
 	for x := x1; x < x2; x++ {
 		// compute gradient and ganle
 		gradient, angle = computePixelGray(img, x, y, cfg)
+		//fmt.Println(gradient)
 
 		// apply sigmoid to enhance dominant gradients
-		o = uint8(255 * (1 + math.Pow(math.E, -1.0*(gradient-cfg.F)/cfg.S)))
+		o = uint8(255 / (1 + math.Exp(-1.0*(gradient-cfg.F)/cfg.S)))
 		r = o
 		g = r
 		b = r
@@ -131,9 +132,9 @@ func doARow(y int, x1, x2 int, img *image.Gray, newimg *image.RGBA, cfg *EdgeDet
 			}
 			newimg.Set(x, y, color.RGBA{r, g, b, o})
 		} else {
-			if o > cfg.LuminanceThreshold {
-				newimg.Set(x, y, color.Gray{o})
-			}
+			//if o > cfg.LuminanceThreshold {
+			newimg.Set(x, y, color.Gray{o})
+			//}
 		}
 	}
 }
