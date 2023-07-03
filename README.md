@@ -55,8 +55,7 @@ The `Transform | Edge Detection` dialog allows you to experiment with various se
 
 Controls:
 
-* F & S: Control a sigmoid to expand the differences between strong and weak edges.
-* Luminance Threshold: Suppress / despeckle weaker edges from results.
+* T & S: Control a sigmoid to enhance the differences between strong and weak edges.
 * Test: Apply new settings against original image, preview results.
 * Cancel: Exit without changing original image.
 * Submit: Apply configured changes to original image.
