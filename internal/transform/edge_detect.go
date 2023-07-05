@@ -52,8 +52,19 @@ func EdgeDetect() {
 	dialog.SetFixedSize(false)
 	dialog.Resize(fyne.NewSize(840, 840))
 
-	fi := canvas.NewImageFromImage(i)
-	fi.FillMode = canvas.ImageFill(canvas.ImageFillContain)
+	// Display the loaded image as Grayscale
+	bw := transform.ImageToGray(c)
+	bwi := canvas.NewImageFromImage(bw)
+	bwi.FillMode = canvas.ImageFill(canvas.ImageFillContain)
+
+	// Display the loaded image after edges are detected
+	edges := transform.DetectEdge(bw)
+	edgesImg := canvas.NewImageFromImage(edges)
+	edgesImg.FillMode = canvas.ImageFill(canvas.ImageFillContain)
+
+	final := transform.ApplySigmoid(edges, cfg)
+	finalImg := canvas.NewImageFromImage(final)
+	finalImg.FillMode = canvas.ImageFill(canvas.ImageFillContain)
 
 	tData := binding.NewFloat()
 	tData.Set(cfg.F)
@@ -65,12 +76,14 @@ func EdgeDetect() {
 	sData := binding.NewFloat()
 	sData.Set(cfg.S)
 	sDb := DataBinder{binder: sData}
-	sliderS := widget.NewSliderWithData(0.1, 2040, sData)
+	sliderS := widget.NewSliderWithData(0.1, 65, sData)
 	sliderLabel := widget.NewLabel("")
 	sliderLabel.Bind(sDb)
-	//lumThresh := custom.NewNumericalEntry()
-	//lumThresh.SetText(fmt.Sprintf("%d", cfg.LuminanceThreshold))
-	tryButton := widget.NewButton("Test", func() {})
+	tryButton := widget.NewButton("Test Edge Enhance", func() {})
+	tryButtonContainer := container.New(
+		layout.NewGridLayoutWithColumns(3),
+		tryButton,
+	)
 
 	form := &widget.Form{
 		Items: []*widget.FormItem{
@@ -78,16 +91,12 @@ func EdgeDetect() {
 			{Text: "", Widget: tLabel},
 			{Text: "S", Widget: sliderS},
 			{Text: "", Widget: sliderLabel},
-			//{Text: "Luminance Threshold", Widget: lumThresh},
-			{Widget: tryButton},
+			{Widget: tryButtonContainer},
 		},
 		OnSubmit: func() {
 			cfg.F, _ = tData.Get()
 			cfg.S, _ = sData.Get()
-			//if lt, err := strconv.Atoi(lumThresh.Text); err == nil {
-			//	cfg.LuminanceThreshold = uint8(lt)
-			//}
-			globals.SetImage(transform.DetectEdge(c, cfg))
+			globals.SetImage(transform.ApplySigmoid(edges, cfg))
 			globals.LoadImage()
 			dialog.Close()
 		},
@@ -95,22 +104,40 @@ func EdgeDetect() {
 			dialog.Close()
 		},
 	}
+
+	// Give the preview container a variable so we can
+	// update the content when Test button is pressed
 	preview := container.New(
+		layout.NewMaxLayout(),
+		finalImg)
+
+	grayContainer := container.NewBorder(
+		widget.NewLabel("Loaded Image as Grayscale"),
+		nil, nil, nil,
+		bwi,
+	)
+
+	edgesContainer := container.NewBorder(
+		widget.NewLabel("Default Edge Detection"),
+		nil, nil, nil,
+		edgesImg)
+
+	previewContainer := container.NewBorder(
+		widget.NewLabel("Enhanced Edge Detection (Final)"),
+		nil, nil, nil,
+		preview)
+
+	images := container.New(
 		layout.NewGridLayoutWithColumns(3),
-		widget.NewLabel("Preview (Test)"),
-		fi,
-		widget.NewLabel(""))
+		grayContainer,
+		edgesContainer,
+		previewContainer)
+
 	cfgForm := container.New(
 		layout.NewGridLayoutWithColumns(3),
 		container.New(
 			layout.NewGridLayoutWithRows(10),
-			widget.NewLabel("Configure T and S Parameters To Contol Edge Detection"),
-			widget.NewLabel(""),
-			//widget.NewLabel("Set Luminance Threshold to Suppress Noise / Despeckle (0-255)")
-		),
-		form,
-		container.New(
-			layout.NewGridLayoutWithRows(10),
+			widget.NewLabel("Configure T and S Parameters To Enhance Edge Brightness"),
 			widget.NewLabel("T and S control a sigmoid function over Edge Luminance such that:"),
 			widget.NewLabel("Where Gradient is the convolved edge intensity, ranging from 0 to 1020:"),
 			widget.NewLabel("Where T is the Threshold, mapping to the Sigmoid inflection point X value"),
@@ -118,17 +145,18 @@ func EdgeDetect() {
 			widget.NewLabel("NOTE: Reducing S to 0.1 is effectively a Step Function; 64 results in 45 degree sigmoid"),
 			widget.NewLabel("Edge Luminance = 255 / (1 + e ^ (-1.0*(Gradient-T)/S))"),
 		),
+		form,
+		widget.NewLabel(""),
 	)
-	layout := container.New(layout.NewGridLayoutWithRows(2), preview, cfgForm)
+	layout := container.New(layout.NewGridLayoutWithRows(2),
+		images,
+		cfgForm)
 	tryButton.OnTapped = func() {
 		cfg.F, _ = tData.Get()
 		cfg.S, _ = sData.Get()
-		//if lt, err := strconv.Atoi(lumThresh.Text); err == nil {
-		//	cfg.LuminanceThreshold = uint8(lt)
-		//}
-		fi := canvas.NewImageFromImage(transform.DetectEdge(c, cfg))
-		fi.FillMode = canvas.ImageFill(canvas.ImageFillContain)
-		preview.Objects[1] = fi
+		finalImg = canvas.NewImageFromImage(transform.ApplySigmoid(edges, cfg))
+		finalImg.FillMode = canvas.ImageFill(canvas.ImageFillContain)
+		preview.Objects[0] = finalImg
 	}
 
 	dialog.SetContent(layout)

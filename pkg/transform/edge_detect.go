@@ -57,18 +57,10 @@ func DefaultEdgeDetectConfig() *EdgeDetectConfig {
 		BlueFactor:  0.114,
 		F:           127,
 		S:           5.0,
-		ShowAngle:   false,
-		//LuminanceThreshold: 127,
 	}
 }
 
-// Luminance Convert color to lumins
-func (cfg *EdgeDetectConfig) Luminance(c color.Color) float64 {
-	r, g, b, _ := c.RGBA()
-	return (float64(r) * cfg.RedFactor) + (float64(g) * cfg.GreenFactor) + (float64(b) * cfg.BlueFactor)
-}
-
-func computePixelGray(img *image.Gray, x, y int, cfg *EdgeDetectConfig) (float64, float64) {
+func computePixelGray(img *image.Gray, x, y int) (float64, float64) {
 	window := [3][3]float64{}
 	var gradientX, gradientY float64
 	gradientX = 0
@@ -86,78 +78,53 @@ func computePixelGray(img *image.Gray, x, y int, cfg *EdgeDetectConfig) (float64
 	return g, angle
 }
 
-func doARow(y int, x1, x2 int, img *image.Gray, newimg *image.RGBA, cfg *EdgeDetectConfig, wg *sync.WaitGroup) {
+func doARow(y int, x1, x2 int, img *image.Gray, newimg *image.Gray, wg *sync.WaitGroup) {
 	defer wg.Done()
-	var o, r, g, b uint8
 	// The convolved value of a single point
 	var gradient float64
-	var angle float64
 	for x := x1; x < x2; x++ {
 		// compute gradient and ganle
-		gradient, angle = computePixelGray(img, x, y, cfg)
-		//fmt.Println(gradient)
+		gradient, _ = computePixelGray(img, x, y)
 
-		// apply sigmoid to enhance dominant gradients
-		o = uint8(255 / (1 + math.Exp(-1.0*(gradient-cfg.F)/cfg.S)))
-		r = o
-		g = r
-		b = r
-		if o > 200 && cfg.ShowAngle {
-			//a2 is the angle in radians scaled to -255 to 255
-			a2 := int((angle * 255.00 / math.Pi) * 100.00)
-
-			// White-to-Red quadrant
-			if math.Pi/-2.0 >= angle && angle > math.Pi*-1.0 {
-				r = 255
-				g = 255 - uint8(a2)*2
-				b = 255 - uint8(a2)*2
-			}
-			// Yellow-to-green quadrant
-			if 0 >= angle && angle > math.Pi/-2 {
-				r = 255 - (uint8(127+a2) * 2)
-				g = 255 - (255 - (uint8(127+a2) * 2))
-				b = 0
-			}
-			//Green-to-blue quadrant
-			if math.Pi/2 > angle && angle >= 0 {
-				r = 0
-				g = 255
-				b = 255 - (255 - uint8(127+a2)*2)
-			}
-			// blue-to-magenta quadrant
-			if angle >= math.Pi/2 {
-				r = uint8(a2) * 2
-				g = 0
-				b = 255
-			}
-			newimg.Set(x, y, color.RGBA{r, g, b, o})
-		} else {
-			//if o > cfg.LuminanceThreshold {
-			newimg.Set(x, y, color.Gray{o})
-			//}
-		}
+		var Y uint8 = uint8(gradient)
+		newimg.Set(x, y, color.Gray{Y})
 	}
 }
 
-// ImageToGray converts an RGBA image to Gray
-func ImageToGray(img *image.RGBA) *image.Gray {
+func ApplySigmoid(img *image.Gray, cfg *EdgeDetectConfig) (newImg *image.Gray) {
 	b := img.Bounds()
-	newImage := image.NewGray(b)
+	newImg = image.NewGray(b)
+	for y := b.Min.Y; y < b.Max.Y; y++ {
+		for x := b.Min.X; x < b.Max.X; x++ {
+			newImg.Set(
+				x, y,
+				color.Gray{
+					uint8(255 / (1 + math.Exp(-1.0*(float64(img.GrayAt(x, y).Y)-cfg.F)/cfg.S))),
+				})
+		}
+	}
+	return
+}
+
+// ImageToGray converts an RGBA image to Gray
+func ImageToGray(img *image.RGBA) (newImage *image.Gray) {
+	b := img.Bounds()
+	newImage = image.NewGray(b)
 	for y := b.Min.Y; y < b.Max.Y; y++ {
 		for x := b.Min.X; x < b.Max.X; x++ {
 			newImage.Set(x, y, color.GrayModel.Convert(img.At(x, y)))
 		}
 	}
-	return newImage
+	return
 }
 
 // DetectEdge for edge detection
-func DetectEdge(colorImg *image.RGBA, cfg *EdgeDetectConfig) *image.RGBA {
-	b := colorImg.Bounds()
-	img := ImageToGray(colorImg)
+func DetectEdge(img *image.Gray) *image.Gray {
+	b := img.Bounds()
+	//img := ImageToGray(colorImg)
 
 	offset := 1
-	newImage := image.NewRGBA(b)
+	newImage := image.NewGray(b)
 	wg := sync.WaitGroup{}
 
 	for y := b.Min.Y + offset; y < b.Max.Y-offset; y++ {
@@ -165,7 +132,7 @@ func DetectEdge(colorImg *image.RGBA, cfg *EdgeDetectConfig) *image.RGBA {
 		x1 := b.Min.X + offset
 		x2 := b.Max.X - offset
 		wg.Add(1)
-		go doARow(y, x1, x2, img, newImage, cfg, &wg)
+		go doARow(y, x1, x2, img, newImage, &wg)
 	}
 	wg.Wait()
 	return newImage
