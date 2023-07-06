@@ -43,11 +43,9 @@ type EdgeDetectConfig struct {
 	GreenFactor float64
 	BlueFactor  float64
 
-	//
 	F         float64
 	S         float64
 	ShowAngle bool
-	//LuminanceThreshold uint8
 }
 
 func DefaultEdgeDetectConfig() *EdgeDetectConfig {

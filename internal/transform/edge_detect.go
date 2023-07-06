@@ -62,6 +62,10 @@ func EdgeDetect() {
 	edgesImg := canvas.NewImageFromImage(edges)
 	edgesImg.FillMode = canvas.ImageFill(canvas.ImageFillContain)
 
+	hist := transform.GetHist(edges, cfg)
+	histImg := canvas.NewImageFromImage(hist)
+	histImg.FillMode = canvas.ImageFill(canvas.ImageFillContain)
+
 	final := transform.ApplySigmoid(edges, cfg)
 	finalImg := canvas.NewImageFromImage(final)
 	finalImg.FillMode = canvas.ImageFill(canvas.ImageFillContain)
@@ -69,7 +73,7 @@ func EdgeDetect() {
 	tData := binding.NewFloat()
 	tData.Set(cfg.F)
 	tDb := DataBinder{binder: tData}
-	tSlider := widget.NewSliderWithData(1, 1020, tData)
+	tSlider := widget.NewSliderWithData(0, 255, tData)
 	tLabel := widget.NewLabel("")
 	tLabel.Bind(tDb)
 
@@ -133,20 +137,26 @@ func EdgeDetect() {
 		edgesContainer,
 		previewContainer)
 
+	histImgContainer := container.NewBorder(
+		widget.NewLabel("Histogram of Edge Luminosity - Y-axis is Log10 Scale"),
+		nil, nil, nil,
+		histImg,
+	)
+
 	cfgForm := container.New(
 		layout.NewGridLayoutWithColumns(3),
 		container.New(
 			layout.NewGridLayoutWithRows(10),
 			widget.NewLabel("Configure T and S Parameters To Enhance Edge Brightness"),
 			widget.NewLabel("T and S control a sigmoid function over Edge Luminance such that:"),
-			widget.NewLabel("Where Gradient is the convolved edge intensity, ranging from 0 to 1020:"),
+			widget.NewLabel("Where Gradient is the convolved edge intensity, ranging from 0 to 255:"),
 			widget.NewLabel("Where T is the Threshold, mapping to the Sigmoid inflection point X value"),
 			widget.NewLabel("Where S controls the tangent at the Sigmoid inflection point"),
 			widget.NewLabel("NOTE: Reducing S to 0.1 is effectively a Step Function; 64 results in 45 degree sigmoid"),
 			widget.NewLabel("Edge Luminance = 255 / (1 + e ^ (-1.0*(Gradient-T)/S))"),
 		),
 		form,
-		widget.NewLabel(""),
+		histImgContainer,
 	)
 	layout := container.New(layout.NewGridLayoutWithRows(2),
 		images,
@@ -157,6 +167,10 @@ func EdgeDetect() {
 		finalImg = canvas.NewImageFromImage(transform.ApplySigmoid(edges, cfg))
 		finalImg.FillMode = canvas.ImageFill(canvas.ImageFillContain)
 		preview.Objects[0] = finalImg
+		hist := transform.GetHist(edges, cfg)
+		histImg := canvas.NewImageFromImage(hist)
+		histImg.FillMode = canvas.ImageFill(canvas.ImageFillContain)
+		histImgContainer.Objects[0] = histImg
 	}
 
 	dialog.SetContent(layout)

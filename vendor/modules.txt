@@ -45,6 +45,9 @@ fyne.io/fyne/v2/widget
 fyne.io/systray
 fyne.io/systray/internal/generated/menu
 fyne.io/systray/internal/generated/notifier
+# github.com/StephaneBunel/bresenham v0.0.0-20211027152503-ec76d7b8e923
+## explicit
+github.com/StephaneBunel/bresenham
 # github.com/davecgh/go-spew v1.1.1
 ## explicit
 github.com/davecgh/go-spew/spew
