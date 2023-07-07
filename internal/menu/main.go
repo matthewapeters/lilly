@@ -5,6 +5,7 @@ import (
 
 	"fyne.io/fyne/v2"
 	"github.com/matthewapeters/lilly/internal/globals"
+	"github.com/matthewapeters/lilly/internal/layers"
 	"github.com/matthewapeters/lilly/internal/lillyfile"
 )
 
@@ -24,12 +25,20 @@ func InitialMenuLoad(ctxChan chan context.Context) {
 		globals.InfoMenu,
 	)
 
+	transformMenu := fyne.NewMenu(
+		"Transform",
+		globals.TransfomEdgeDetect,
+		globals.TransformScale)
+
+	layersMenu := fyne.NewMenu(
+		"Layers",
+		fyne.NewMenuItem("Show Layers", layers.Show),
+	)
+
 	menu := fyne.NewMainMenu(
 		fileMenu,
-		fyne.NewMenu(
-			"Transform",
-			globals.TransfomEdgeDetect,
-			globals.TransformScale),
+		transformMenu,
+		layersMenu,
 	)
 
 	canvs.SetMainMenu(menu)

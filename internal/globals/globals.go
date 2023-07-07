@@ -2,11 +2,9 @@ package globals
 
 import (
 	"context"
-	"fmt"
 	"image"
 
 	"fyne.io/fyne/v2"
-	"fyne.io/fyne/v2/canvas"
 )
 
 type WindowType string
@@ -25,6 +23,7 @@ const (
 
 var (
 	AppCtx = context.Context(context.Background())
+	App    fyne.App
 )
 
 func GetImage() image.Image {
@@ -45,17 +44,6 @@ func GetWindow() fyne.Window {
 		return nil
 	}
 	return wndRaw.(fyne.Window)
-}
-
-func LoadImage() {
-	if canvs := GetWindow(); canvs != nil {
-		canvs.SetTitle(fmt.Sprintf("%s", AppCtx.Value(FilePath)))
-		if img := GetImage(); img != nil {
-			i := canvas.NewImageFromImage(img)
-			i.FillMode = canvas.ImageFill(canvas.ImageFillContain)
-			canvs.SetContent(i)
-		}
-	}
 }
 
 func SetValue(key any, value any) {

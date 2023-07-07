@@ -12,6 +12,7 @@ import (
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
 	"github.com/matthewapeters/lilly/internal/globals"
+	"github.com/matthewapeters/lilly/internal/layers"
 	"github.com/matthewapeters/lilly/pkg/transform"
 )
 
@@ -101,7 +102,7 @@ func EdgeDetect() {
 			cfg.F, _ = tData.Get()
 			cfg.S, _ = sData.Get()
 			globals.SetImage(transform.ApplySigmoid(edges, cfg))
-			globals.LoadImage()
+			layers.LoadImage()
 			dialog.Close()
 		},
 		OnCancel: func() {

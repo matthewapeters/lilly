@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/matthewapeters/lilly/internal/globals"
+	"github.com/matthewapeters/lilly/internal/layers"
 	"github.com/matthewapeters/lilly/internal/transform"
 
 	"fyne.io/fyne/v2"
@@ -55,7 +56,8 @@ func OpenFile() {
 		globals.TransformScale.Disabled = false
 		globals.FileSaveAs.Disabled = false
 		globals.FileSaveAs.Action = SaveFileAs
-		globals.LoadImage()
+		layers.BaseLayer()
+		layers.LoadImage()
 	}
 
 	picker := dialog.NewFileOpen(openFileCallBack, globals.GetWindow())

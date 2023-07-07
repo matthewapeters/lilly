@@ -38,15 +38,15 @@ func tidyUp() {
 }
 
 func main() {
-	myApp := app.NewWithID(ApplicationName)
-	myApp.SetIcon(theme.ColorPaletteIcon())
-	myWindow := myApp.NewWindow(ApplicationName)
+	globals.App = app.NewWithID(ApplicationName)
+	globals.App.SetIcon(theme.ColorPaletteIcon())
+	myWindow := globals.App.NewWindow(ApplicationName)
 	myWindow.Resize(fyne.NewSize(400, 400))
 	globals.AppCtx = context.WithValue(globals.AppCtx, globals.AppWindow, myWindow)
 	globals.AppCtx = context.WithValue(globals.AppCtx, globals.FileURI, nil)
 	menu.InitialMenuLoad(ctxChan)
 	go updateCtx()
 	myWindow.Show()
-	myApp.Run()
+	globals.App.Run()
 	tidyUp()
 }
