@@ -49,6 +49,7 @@ func OpenFile() {
 			os.Exit(4)
 		}
 		globals.SetImage(img)
+		globals.SetValue(globals.Bounds, img.Bounds())
 		globals.InfoMenu.Disabled = false
 		globals.InfoMenu.Action = FileInfo
 		globals.TransfomEdgeDetect.Disabled = false

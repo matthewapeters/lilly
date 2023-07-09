@@ -3,9 +3,10 @@ package layers
 import (
 	"fmt"
 	"image"
+	"image/draw"
+	"sort"
 
 	"fyne.io/fyne/v2"
-	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/widget"
 	"github.com/matthewapeters/lilly/internal/globals"
@@ -50,7 +51,9 @@ func Show() {
 
 func Hide() {}
 
-func Add() {}
+func Add() {
+	globals.SetValue(globals.DrawSelection, true)
+}
 
 func ReOrder() {}
 
@@ -68,13 +71,29 @@ func (l *Layer) GetWidget() (layerContainer *fyne.Container) {
 	)
 	return
 }
+
+func applyLayers(img *image.RGBA) {
+	layerIdxs := []int{}
+	for key := range Layers {
+		layerIdxs = append(layerIdxs, key)
+	}
+	sort.IntSlice(layerIdxs).Sort()
+	for _, key := range layerIdxs {
+		i := Layers[key].Image
+		p := Layers[key].Anchor
+		draw.Draw(img, i.Bounds(), i, p, draw.Src)
+	}
+}
+
 func LoadImage() {
-	if canvs := globals.GetWindow(); canvs != nil {
-		canvs.SetTitle(fmt.Sprintf("%s", globals.AppCtx.Value(globals.FilePath)))
+	if win := globals.GetWindow(); win != nil {
+		win.SetTitle(fmt.Sprintf("%s", globals.AppCtx.Value(globals.FilePath)))
 		if img := globals.GetImage(); img != nil {
-			i := canvas.NewImageFromImage(img)
-			i.FillMode = canvas.ImageFill(canvas.ImageFillContain)
-			canvs.SetContent(i)
+			base := image.NewRGBA(globals.AppCtx.Value(globals.Bounds).(image.Rectangle))
+			applyLayers(base)
+			ds := NewDrawScape(base)
+			win.SetContent(ds)
+			win.Show()
 		}
 	}
 }

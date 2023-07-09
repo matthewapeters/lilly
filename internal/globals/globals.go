@@ -12,13 +12,17 @@ type ImageType string
 type FileNameType string
 type FilePathType string
 type URIType string
+type BoundsType string
+type DrawSelectionType string
 
 const (
-	FileName  = FileNameType("FileName")
-	FilePath  = FilePathType("FilePath")
-	FileURI   = URIType("FileURI")
-	AppWindow = WindowType("AppWindow")
-	AppImage  = ImageType("AppImage")
+	FileName      = FileNameType("FileName")
+	FilePath      = FilePathType("FilePath")
+	FileURI       = URIType("FileURI")
+	AppWindow     = WindowType("AppWindow")
+	AppImage      = ImageType("AppImage")
+	Bounds        = BoundsType("Bounds")
+	DrawSelection = DrawSelectionType("DoDrawSelectionBool")
 )
 
 var (

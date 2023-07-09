@@ -33,6 +33,7 @@ func InitialMenuLoad(ctxChan chan context.Context) {
 	layersMenu := fyne.NewMenu(
 		"Layers",
 		fyne.NewMenuItem("Show Layers", layers.Show),
+		fyne.NewMenuItem("Add Layer", layers.Add),
 	)
 
 	menu := fyne.NewMainMenu(
