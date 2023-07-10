@@ -14,6 +14,7 @@ type FilePathType string
 type URIType string
 type BoundsType string
 type DrawSelectionType string
+type DrawScapeType string
 
 const (
 	FileName      = FileNameType("FileName")
@@ -23,6 +24,7 @@ const (
 	AppImage      = ImageType("AppImage")
 	Bounds        = BoundsType("Bounds")
 	DrawSelection = DrawSelectionType("DoDrawSelectionBool")
+	AppDrawScape  = DrawScapeType("ApplicationDrawScape")
 )
 
 var (

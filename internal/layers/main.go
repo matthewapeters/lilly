@@ -59,6 +59,11 @@ func ReOrder() {}
 
 func (l *Layer) GetWidget() (layerContainer *fyne.Container) {
 	check := widget.NewCheck(l.Name, func(changed bool) {})
+	check.SetChecked(l.Display)
+	check.OnChanged = func(tf bool) {
+		l.Display = tf
+		LoadImage()
+	}
 	entry := widget.NewEntry()
 	entry.Text = l.Name
 	entry.OnChanged = func(newName string) {
@@ -75,7 +80,9 @@ func (l *Layer) GetWidget() (layerContainer *fyne.Container) {
 func applyLayers(img *image.RGBA) {
 	layerIdxs := []int{}
 	for key := range Layers {
-		layerIdxs = append(layerIdxs, key)
+		if Layers[key].Display {
+			layerIdxs = append(layerIdxs, key)
+		}
 	}
 	sort.IntSlice(layerIdxs).Sort()
 	for _, key := range layerIdxs {
@@ -92,6 +99,7 @@ func LoadImage() {
 			base := image.NewRGBA(globals.AppCtx.Value(globals.Bounds).(image.Rectangle))
 			applyLayers(base)
 			ds := NewDrawScape(base)
+			globals.SetValue(globals.AppDrawScape, ds)
 			win.SetContent(ds)
 			win.Show()
 		}

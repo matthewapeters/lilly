@@ -101,7 +101,16 @@ func EdgeDetect() {
 		OnSubmit: func() {
 			cfg.F, _ = tData.Get()
 			cfg.S, _ = sData.Get()
-			globals.SetImage(transform.ApplySigmoid(edges, cfg))
+			img := transform.ApplySigmoid(edges, cfg)
+			layers.Layers[len(layers.Layers)+1] = &layers.Layer{
+				ID:      fmt.Sprintf("Layer_%d", len(layers.Layers)+1),
+				Name:    "EdgeDetect",
+				Display: true,
+				Order:   len(layers.Layers) + 1,
+				Bounds:  img.Bounds(),
+				Image:   img,
+				Anchor:  img.Bounds().Min,
+			}
 			layers.LoadImage()
 			dialog.Close()
 		},
