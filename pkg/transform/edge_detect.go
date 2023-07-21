@@ -45,6 +45,7 @@ type EdgeDetectConfig struct {
 
 	F         float64
 	S         float64
+	Tx        bool // set background to transparent?
 	ShowAngle bool
 }
 
@@ -55,6 +56,7 @@ func DefaultEdgeDetectConfig() *EdgeDetectConfig {
 		BlueFactor:  0.114,
 		F:           127,
 		S:           5.0,
+		Tx:          true,
 	}
 }
 
@@ -89,16 +91,19 @@ func doARow(y int, x1, x2 int, img *image.Gray, newimg *image.Gray, wg *sync.Wai
 	}
 }
 
-func ApplySigmoid(img *image.Gray, cfg *EdgeDetectConfig) (newImg *image.Gray) {
+func ApplySigmoid(img *image.Gray, cfg *EdgeDetectConfig) (newImg *image.RGBA) {
 	b := img.Bounds()
-	newImg = image.NewGray(b)
+	newImg = image.NewRGBA(b)
+	var clr color.Color
 	for y := b.Min.Y; y < b.Max.Y; y++ {
 		for x := b.Min.X; x < b.Max.X; x++ {
-			newImg.Set(
-				x, y,
-				color.Gray{
-					uint8(255 / (1 + math.Exp(-1.0*(float64(img.GrayAt(x, y).Y)-cfg.F)/cfg.S))),
-				})
+			lum := uint8(255 / (1 + math.Exp(-1.0*(float64(img.GrayAt(x, y).Y)-cfg.F)/cfg.S)))
+			if cfg.Tx && lum < uint8(cfg.F) {
+				clr = color.RGBA{0, 0, 0, 0}
+			} else {
+				clr = color.Gray{lum}
+			}
+			newImg.Set(x, y, clr)
 		}
 	}
 	return

@@ -88,7 +88,7 @@ func applyLayers(img *image.RGBA) {
 	for _, key := range layerIdxs {
 		i := Layers[key].Image
 		p := Layers[key].Anchor
-		draw.Draw(img, i.Bounds(), i, p, draw.Src)
+		draw.Draw(img, i.Bounds(), i, p, draw.Over)
 	}
 }
 

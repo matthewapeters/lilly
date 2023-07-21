@@ -89,6 +89,8 @@ func EdgeDetect() {
 		layout.NewGridLayoutWithColumns(3),
 		tryButton,
 	)
+	transparencyCheck := widget.NewCheck("Make Background Transparant", nil)
+	transparencyCheck.Checked = true
 
 	form := &widget.Form{
 		Items: []*widget.FormItem{
@@ -96,11 +98,13 @@ func EdgeDetect() {
 			{Text: "", Widget: tLabel},
 			{Text: "S", Widget: sliderS},
 			{Text: "", Widget: sliderLabel},
+			{Text: "BG Trans", Widget: transparencyCheck},
 			{Widget: tryButtonContainer},
 		},
 		OnSubmit: func() {
 			cfg.F, _ = tData.Get()
 			cfg.S, _ = sData.Get()
+			cfg.Tx = transparencyCheck.Checked
 			img := transform.ApplySigmoid(edges, cfg)
 			layers.Layers[len(layers.Layers)+1] = &layers.Layer{
 				ID:      fmt.Sprintf("Layer_%d", len(layers.Layers)+1),
@@ -174,6 +178,7 @@ func EdgeDetect() {
 	tryButton.OnTapped = func() {
 		cfg.F, _ = tData.Get()
 		cfg.S, _ = sData.Get()
+		cfg.Tx = transparencyCheck.Checked
 		finalImg = canvas.NewImageFromImage(transform.ApplySigmoid(edges, cfg))
 		finalImg.FillMode = canvas.ImageFill(canvas.ImageFillContain)
 		preview.Objects[0] = finalImg
