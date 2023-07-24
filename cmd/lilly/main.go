@@ -32,21 +32,25 @@ func updateCtx() {
 	}
 }
 
-func tidyUp() {
+func tidyUp(cancelFunc func()) {
 	fmt.Println("Exited")
 	close(ctxChan)
+	cancelFunc()
 }
 
 func main() {
+	var cancelFunc func()
 	globals.App = app.NewWithID(ApplicationName)
 	globals.App.SetIcon(theme.ColorPaletteIcon())
 	myWindow := globals.App.NewWindow(ApplicationName)
 	myWindow.Resize(fyne.NewSize(400, 400))
 	globals.AppCtx = context.WithValue(globals.AppCtx, globals.AppWindow, myWindow)
 	globals.AppCtx = context.WithValue(globals.AppCtx, globals.FileURI, nil)
+	globals.AppCtx, cancelFunc = context.WithCancel(globals.AppCtx)
 	menu.InitialMenuLoad(ctxChan)
 	go updateCtx()
+	myWindow.SetMaster()
 	myWindow.Show()
 	globals.App.Run()
-	tidyUp()
+	tidyUp(cancelFunc)
 }

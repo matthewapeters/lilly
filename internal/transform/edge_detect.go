@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"image"
 	"strconv"
+	"sync"
+	"time"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
@@ -41,6 +43,9 @@ func (db DataBinder) Set(v string) error {
 }
 
 func EdgeDetect() {
+	killRenderDebounceChan := make(chan bool)
+	renderPreviewChan := make(chan bool, 10)
+
 	cfg := transform.DefaultEdgeDetectConfig()
 	i := globals.GetImage()
 	c, ok := i.(*image.RGBA)
@@ -52,6 +57,11 @@ func EdgeDetect() {
 	dialog := fyne.CurrentApp().NewWindow("Edge Detection")
 	dialog.SetFixedSize(false)
 	dialog.Resize(fyne.NewSize(840, 840))
+
+	// cancelFunc is for cleaning up regardless of how the dialog ends
+	cancelFunc := func() {
+		killRenderDebounceChan <- true
+	}
 
 	// Display the loaded image as Grayscale
 	bw := transform.ImageToGray(c)
@@ -84,11 +94,7 @@ func EdgeDetect() {
 	sliderS := widget.NewSliderWithData(0.1, 65, sData)
 	sliderLabel := widget.NewLabel("")
 	sliderLabel.Bind(sDb)
-	tryButton := widget.NewButton("Test Edge Enhance", func() {})
-	tryButtonContainer := container.New(
-		layout.NewGridLayoutWithColumns(3),
-		tryButton,
-	)
+
 	transparencyCheck := widget.NewCheck("Make Background Transparant", nil)
 	transparencyCheck.Checked = true
 
@@ -99,7 +105,7 @@ func EdgeDetect() {
 			{Text: "S", Widget: sliderS},
 			{Text: "", Widget: sliderLabel},
 			{Text: "BG Trans", Widget: transparencyCheck},
-			{Widget: tryButtonContainer},
+			//{Widget: tryButtonContainer},
 		},
 		OnSubmit: func() {
 			cfg.F, _ = tData.Get()
@@ -175,19 +181,70 @@ func EdgeDetect() {
 	layout := container.New(layout.NewGridLayoutWithRows(2),
 		images,
 		cfgForm)
-	tryButton.OnTapped = func() {
-		cfg.F, _ = tData.Get()
-		cfg.S, _ = sData.Get()
-		cfg.Tx = transparencyCheck.Checked
-		finalImg = canvas.NewImageFromImage(transform.ApplySigmoid(edges, cfg))
-		finalImg.FillMode = canvas.ImageFill(canvas.ImageFillContain)
-		preview.Objects[0] = finalImg
-		hist := transform.GetHist(edges, cfg)
-		histImg := canvas.NewImageFromImage(hist)
-		histImg.FillMode = canvas.ImageFill(canvas.ImageFillContain)
-		histImgContainer.Objects[0] = histImg
+
+	renderPreview := func() {
+		wg := sync.WaitGroup{}
+		wg.Add(2)
+		go func() {
+			finalImg := canvas.NewImageFromImage(transform.ApplySigmoid(edges, cfg))
+			finalImg.FillMode = canvas.ImageFill(canvas.ImageFillContain)
+			preview.Objects[0] = finalImg
+			wg.Done()
+		}()
+		go func() {
+			histImg := canvas.NewImageFromImage(transform.GetHist(edges, cfg))
+			histImg.FillMode = canvas.ImageFill(canvas.ImageFillContain)
+			histImgContainer.Objects[0] = histImg
+			wg.Done()
+		}()
+		wg.Wait()
 	}
 
+	go func(debounceChan, killChan chan bool) {
+		doRender := false
+		t := time.NewTicker(200 * time.Millisecond)
+	LOOP:
+		for {
+			select {
+			case <-killChan:
+				close(debounceChan)
+				close(killChan)
+				t.Stop()
+				break LOOP
+			case <-globals.AppCtx.Done():
+				killChan <- true
+			case <-debounceChan:
+				doRender = true
+			case <-t.C:
+				if doRender {
+					doRender = false
+					renderPreview()
+				}
+			}
+		}
+	}(renderPreviewChan, killRenderDebounceChan)
+
+	renderPreviewT64 := func(T float64) {
+		tData.Set(T)
+		cfg.F = T
+		tDb.Set(fmt.Sprintf("%f", T))
+		renderPreviewChan <- true
+	}
+	renderPreviewS64 := func(S float64) {
+		sData.Set(S)
+		cfg.S = S
+		sDb.Set(fmt.Sprintf("%f", S))
+		renderPreviewChan <- true
+	}
+	renderPreviewB := func(b bool) {
+		cfg.Tx = b
+		renderPreviewChan <- true
+	}
+	tSlider.OnChanged = renderPreviewT64
+	sliderS.OnChanged = renderPreviewS64
+	transparencyCheck.OnChanged = renderPreviewB
+
 	dialog.SetContent(layout)
+	dialog.SetOnClosed(cancelFunc)
 	dialog.Show()
 }

@@ -7,7 +7,7 @@
          2. Any other tuneable parameters? (F, S, Threshold - done)
       2. Apply edge detection convolution to loaded image, load resulting image. (initial done)
       3. Phase 2: add histogram of luminance to aid in threshold setting. (done)
-      4. Remove Test button, allow histogram and edge-enchance to be triggered on changes to T, S.
+      4. Remove Test button, allow histogram and edge-enchance to be triggered on changes to T, S.  (Done)
       5. Allow edge-detection in layers and selected windows to enable special-treatment enhancement to parts of the image
 2. Add pkg/transform/scale.go
    1. Display Scale Dialog
